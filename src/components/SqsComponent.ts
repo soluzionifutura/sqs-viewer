@@ -8,9 +8,9 @@ export default class SqsComponent {
   constructor(options: {
     region: string,
     localEndpoint: string,
-    env?: string
+    env: string
   }) {
-    this.#env = options.env || process.env.NODE_ENV || "local"
+    this.#env = options.env
     this.localEndpoint = options.localEndpoint
 
     const config: AWS.SQS.ClientConfiguration = {

@@ -1,22 +1,22 @@
 {
   "private": true,
   "name": "sqs-viewer-api",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "sqs viewer",
-  "engineStrict": true,
   "main": "./dist/index",
   "scripts": {
     "eslint": "eslint '**/*.{ts,js}' --ignore-pattern node_modules/; exit 0",
     "eslint:fix": "eslint '**/*.{ts,js}' --fix --ignore-pattern node_modules/; exit 0",
-    "postinstall": "npm run compile:all",
-    "compile:all": "rm -rf dist && npm run compile:ts && npm run compile:public",
-    "compile:ts": "tsc -p tsconfig.src.json",
+    "compile:all": "rm -rf dist && npm run compile:public && npm run compile:ts",
+    "compile:ts": "tsc",
     "compile:public": "mkdir -p ./dist && cp -r ./src/public ./dist",
     "dev": "concurrently -n \"src,public\" \"npm run watch:src\" \"npm run watch:public\"",
     "watch:src": "rm -rf dist && tsc-watch --noClear -p tsconfig.src.json --onSuccess \"npm start\"",
     "watch:public": "nodemon --watch ./src/public --ext '.html .css .js' --exec 'npm run compile:public'",
     "start": "node .",
-    "test": "mocha -r ts-node/register \"test/**\""
+    "test": "mocha -r ts-node/register \"test/**\"",
+    "publish": "npm run compile:all && docker build -t solfu/$npm_package_name:$npm_package_version . && docker push solfu/$npm_package_name:$npm_package_version",
+    "test2": "echo $npm_package_name"
   },
   "keywords": [],
   "author": "Soluzioni Futura <info@soluzionifutura.it>",

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import express, { Request, Response, NextFunction } from "express"
 import Debug from "debug"
 import SqsComponent from "./components/SqsComponent"
@@ -19,7 +20,6 @@ void (async(): Promise<void> => {
   app.get("/listQueues", async(req, res) => {
     try {
       const data = await sqsComponent.sqs.listQueues().promise()
-      console.log(data)
 
       res.json((data.QueueUrls || []).map(e => {
         if (new URL(e).hostname === "localhost") {
@@ -28,6 +28,7 @@ void (async(): Promise<void> => {
         return e
       }))
     } catch (err) {
+      console.error(err)
       res.status(500).json({
         error: err.stack
       })
@@ -53,6 +54,7 @@ void (async(): Promise<void> => {
         attributes
       })
     } catch (err) {
+      console.error(err)
       res.status(500).json({
         error: err.stack
       })
@@ -72,6 +74,7 @@ void (async(): Promise<void> => {
         QueueUrl: queueUrl
       }).promise()))
     } catch (err) {
+      console.error(err)
       res.status(500).json({
         error: err.stack
       })
@@ -95,6 +98,7 @@ void (async(): Promise<void> => {
 
       res.json(Messages || [])
     } catch (err) {
+      console.error(err)
       res.status(500).json({
         error: err.stack
       })

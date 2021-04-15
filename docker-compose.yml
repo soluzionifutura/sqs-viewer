@@ -1,0 +1,37 @@
+version: "3.7"
+
+services:
+  sqs:
+    image: softwaremill/elasticmq
+    container_name: sqs
+    ports:
+      - 9324:9324
+    volumes:
+      - ./sqs/config/custom.conf:/opt/elasticmq.conf:cached
+    logging:
+      driver: none
+
+  sqs-viewer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: "npm run dev"
+    volumes:
+      - .:/home/node/app
+    container_name: sqs-viewer
+    environment:
+      NODE_ENV: staging
+      DEBUG: ${DEBUG}
+      DEBUG_HIDE_DATE: 1
+      DEBUG_COLORS: 1
+      FORCE_COLORS: 1
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+      PORT: ${SQS_VIEWER_PORT}
+      SQS_REGION: ${SQS_REGION}
+      SQS_LOCAL_ENDPOINT: ${SQS_LOCAL_ENDPOINT}
+    ports:
+      - ${SQS_VIEWER_PORT}:${SQS_VIEWER_PORT}
+    depends_on:
+      - sqs

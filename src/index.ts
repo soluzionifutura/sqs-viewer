@@ -17,13 +17,21 @@ void (async(): Promise<void> => {
   app.use(express.static(join(__dirname, "public")))
 
   app.get("/listQueues", async(req, res) => {
-    const data = await sqsComponent.sqs.listQueues().promise()
-    res.json(data.QueueUrls!.map(e => {
-      if (new URL(e).hostname === "localhost") {
-        return e.replace("localhost", new URL(SQS_LOCAL_ENDPOINT!).hostname)
-      }
-      return e
-    }))
+    try {
+      const data = await sqsComponent.sqs.listQueues().promise()
+      console.log(data)
+
+      res.json((data.QueueUrls || []).map(e => {
+        if (new URL(e).hostname === "localhost") {
+          return e.replace("localhost", new URL(SQS_LOCAL_ENDPOINT!).hostname)
+        }
+        return e
+      }))
+    } catch (err) {
+      res.status(500).json({
+        error: err.stack
+      })
+    }
   })
 
   app.get("/getQueueAttributes", async(req, res) => {
@@ -34,15 +42,21 @@ void (async(): Promise<void> => {
       })
     }
 
-    const attributes = (await sqsComponent.sqs.getQueueAttributes({
-      QueueUrl: queueUrl,
-      AttributeNames: (req.query.fields as string).split(",") || ["All"]
-    }).promise()).Attributes
+    try {
+      const attributes = (await sqsComponent.sqs.getQueueAttributes({
+        QueueUrl: queueUrl,
+        AttributeNames: (req.query.fields as string).split(",") || ["All"]
+      }).promise()).Attributes
 
-    res.json({
-      queueUrl,
-      attributes
-    })
+      res.json({
+        queueUrl,
+        attributes
+      })
+    } catch (err) {
+      res.status(500).json({
+        error: err.stack
+      })
+    }
   })
 
   app.get("/purgeQueue", async(req, res) => {
@@ -53,9 +67,15 @@ void (async(): Promise<void> => {
       })
     }
 
-    res.json((await sqsComponent.sqs.purgeQueue({
-      QueueUrl: queueUrl
-    }).promise()))
+    try {
+      res.json((await sqsComponent.sqs.purgeQueue({
+        QueueUrl: queueUrl
+      }).promise()))
+    } catch (err) {
+      res.status(500).json({
+        error: err.stack
+      })
+    }
   })
 
   app.get("/receiveMessages", async(req, res) => {
@@ -66,11 +86,19 @@ void (async(): Promise<void> => {
       })
     }
 
-    res.json((await sqsComponent.sqs.receiveMessage({
-      QueueUrl: queueUrl,
-      MaxNumberOfMessages: 10,
-      VisibilityTimeout: 0
-    }).promise()).Messages  || [])
+    try {
+      const { Messages } = await sqsComponent.sqs.receiveMessage({
+        QueueUrl: queueUrl,
+        MaxNumberOfMessages: 10,
+        VisibilityTimeout: 0
+      }).promise()
+
+      res.json(Messages || [])
+    } catch (err) {
+      res.status(500).json({
+        error: err.stack
+      })
+    }
   })
 
   app.all("*", (req, res) => res.sendStatus(404))

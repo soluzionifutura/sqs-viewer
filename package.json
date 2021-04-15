@@ -8,15 +8,15 @@
     "eslint": "eslint '**/*.{ts,js}' --ignore-pattern node_modules/; exit 0",
     "eslint:fix": "eslint '**/*.{ts,js}' --fix --ignore-pattern node_modules/; exit 0",
     "compile:all": "rm -rf dist && npm run compile:public && npm run compile:ts",
-    "compile:ts": "tsc",
+    "compile:ts": "tsc -p ./tsconfig.src.json",
     "compile:public": "mkdir -p ./dist && cp -r ./src/public ./dist",
     "dev": "concurrently -n \"src,public\" \"npm run watch:src\" \"npm run watch:public\"",
     "watch:src": "rm -rf dist && tsc-watch --noClear -p tsconfig.src.json --onSuccess \"npm start\"",
     "watch:public": "nodemon --watch ./src/public --ext '.html .css .js' --exec 'npm run compile:public'",
     "start": "node .",
-    "test": "mocha -r ts-node/register \"test/**\"",
     "publish": "npm run compile:all && docker build -t solfu/$npm_package_name:$npm_package_version . && docker push solfu/$npm_package_name:$npm_package_version",
-    "test2": "echo $npm_package_name"
+    "test": "npm run stop && ts-node ./npm_scripts/start.ts",
+    "stop": "docker-compose down -v --remove-orphans"
   },
   "keywords": [],
   "author": "Soluzioni Futura <info@soluzionifutura.it>",
@@ -28,6 +28,7 @@
     "@types/mocha": "^8.2.2",
     "@types/node": "^14.14.37",
     "@types/tsc-watch": "^4.2.0",
+    "@types/yargs-parser": "^20.2.0",
     "@typescript-eslint/eslint-plugin": "^4.21.0",
     "@typescript-eslint/parser": "^4.21.0",
     "chai": "^4.3.4",
@@ -37,7 +38,9 @@
     "nodemon": "^2.0.7",
     "ts-node": "^9.1.1",
     "tsc-watch": "^4.2.9",
-    "typescript": "^4.2.4"
+    "typescript": "^4.2.4",
+    "yaml": "^1.10.2",
+    "yargs-parser": "^20.2.7"
   },
   "dependencies": {
     "@types/express": "^4.17.11",

@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "sqs-viewer-api",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "sqs viewer",
   "main": "./dist/index",
   "scripts": {
@@ -15,7 +15,7 @@
     "watch:public": "nodemon --watch ./src/public --ext '.html .css .js' --exec 'npm run compile:public'",
     "start": "node .",
     "publish": "npm run compile:all && docker build -t solfu/$npm_package_name:$npm_package_version . && docker push solfu/$npm_package_name:$npm_package_version",
-    "test": "npm run stop && ts-node ./npm_scripts/start.ts",
+    "test": "npm run stop && docker-compose up",
     "stop": "docker-compose down -v --remove-orphans"
   },
   "keywords": [],
@@ -43,6 +43,7 @@
     "yargs-parser": "^20.2.7"
   },
   "dependencies": {
+    "@soluzioni-futura/sqs-component": "^1.0.0",
     "@types/express": "^4.17.11",
     "aws-sdk": "^2.884.0",
     "express": "^4.17.1"

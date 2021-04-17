@@ -1,6 +1,26 @@
 version: "3.7"
 
+networks:
+  credentials_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "169.254.170.0/24"
+          gateway: 169.254.170.1
+
 services:
+  ecs-local-endpoints:
+    image: amazon/amazon-ecs-local-container-endpoints
+    volumes:
+      - /var/run:/var/run
+      - $HOME/.aws/:/home/.aws/
+    environment:
+      HOME: "/home"
+      AWS_PROFILE: ${AWS_PROFILE}
+    networks:
+      credentials_network:
+        ipv4_address: "169.254.170.2"
+
   sqs:
     image: softwaremill/elasticmq
     container_name: sqs
@@ -10,8 +30,14 @@ services:
       - ./sqs/config/custom.conf:/opt/elasticmq.conf:cached
     logging:
       driver: none
+    hostname: sqs-local
+    networks:
+      credentials_network:
+        ipv4_address: "169.254.170.3"
 
   sqs-viewer:
+    env_file:
+      - .env
     build:
       context: .
       dockerfile: Dockerfile
@@ -20,18 +46,20 @@ services:
       - .:/home/node/app
     container_name: sqs-viewer
     environment:
-      NODE_ENV: staging
+      NODE_ENV: local
       DEBUG: ${DEBUG}
       DEBUG_HIDE_DATE: 1
       DEBUG_COLORS: 1
       FORCE_COLORS: 1
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+      AWS_CONTAINER_CREDENTIALS_RELATIVE_URI: "/creds"
       PORT: ${SQS_VIEWER_PORT}
       SQS_REGION: ${SQS_REGION}
       SQS_LOCAL_ENDPOINT: ${SQS_LOCAL_ENDPOINT}
     ports:
       - ${SQS_VIEWER_PORT}:${SQS_VIEWER_PORT}
     depends_on:
+      - ecs-local-endpoints
       - sqs
+    networks:
+      credentials_network:
+        ipv4_address: "169.254.170.4"

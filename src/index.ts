@@ -1,12 +1,12 @@
 /* eslint-disable no-console */
 import express, { Request, Response, NextFunction } from "express"
 import Debug from "debug"
-import SqsComponent from "./components/SqsComponent"
+import SqsComponent from "@soluzioni-futura/sqs-component"
 import { join } from "path"
 const app = express()
 
 const debug = Debug("sqs-viewer")
-const { PORT = 8888, NODE_ENV = "local", SQS_REGION, SQS_LOCAL_ENDPOINT } = process.env
+const { PORT = 8888, NODE_ENV, SQS_REGION, SQS_LOCAL_ENDPOINT } = process.env
 
 void (async(): Promise<void> => {
   const sqsComponent = new SqsComponent({
